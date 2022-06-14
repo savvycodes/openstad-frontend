@@ -33,10 +33,8 @@ ENV S3_KEY=""
 ENV S3_SECRET=""
 ENV S3_BUCKET=""
 
-
 # Install all base dependencies.
 RUN apk add --no-cache --update openssl g++ make python musl-dev git bash
-
 
 # Set the working directory to the root of the container
 WORKDIR /home/app
@@ -49,26 +47,22 @@ COPY --chown=node:node . /home/app
 RUN mkdir ~/.ssh ; echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 
 # Install node modules
-RUN npm install --loglevel warn --production
-
-RUN npm install -g nodemon
-
-# Remove unused packages only used for building.
-RUN apk del openssl g++ make python && rm -rf /var/cache/apk/*
-
-RUN mkdir -p /home/app/public
-RUN mkdir -p /home/app/public
-RUN mkdir -p /home/app/public/modules
-RUN mkdir -p /home/app/public/css
-RUN mkdir -p /home/app/public/js
-RUN mkdir -p /home/app/public/img
-RUN mkdir -p /home/app/public/apos-minified
-RUN mkdir -p /home/app/data
+RUN npm install --loglevel warn --production \
+    # Remove unused packages only used for building.
+    && apk del openssl g++ make python && rm -rf /var/cache/apk/* \
+    && mkdir -p /home/app/public \
+    && mkdir -p /home/app/public \
+    && mkdir -p /home/app/public/modules \
+    && mkdir -p /home/app/public/css \
+    && mkdir -p /home/app/public/js \
+    && mkdir -p /home/app/public/img \
+    && mkdir -p /home/app/public/apos-minified \
+    && mkdir -p /home/app/data \
+    && mkdir -p /home/app/public/uploads/assets
 
 # Mount persistent storage
 #VOLUME /home/app/data
 VOLUME /home/app/public/uploads
-RUN mkdir -p /home/app/public/uploads/assets
 
 # Set node ownership to/home/app
 # only run CHOWN on dirs just created
@@ -81,7 +75,6 @@ USER node
 # Exposed ports for application
 EXPOSE 4444/tcp
 EXPOSE 4444/udp
-
 
 # Run the application
 CMD [ "npm", "start" ]
