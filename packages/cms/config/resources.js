@@ -4,14 +4,14 @@ const resources = [
     value: 'idea',
     resourceEndPoint: 'idea',
     //config is used in API config
-    configKey: 'ideas'
+    configKey: 'ideas',
   },
   {
     label: 'Article',
     value: 'article',
     resourceEndPoint: 'article',
     //config is used in API config
-    configKey: 'articles'
+    configKey: 'articles',
   },
   // always get the values from the active user
   {
@@ -19,7 +19,7 @@ const resources = [
     value: 'activeUser',
     resourceEndPoint: 'user',
     //config is used in API config
-    configKey: 'users'
+    configKey: 'users',
   },
   // get user from the API
   {
@@ -27,15 +27,29 @@ const resources = [
     value: 'user',
     resourceEndPoint: 'user',
     //config is used in API config
-    configKey: 'users'
+    configKey: 'users',
   },
   {
     label: 'Event',
     value: 'event',
     resourceEndPoint: 'event',
     //config is used in API config
-    configKey: 'events'
+    configKey: 'events',
   },
-]
+  {
+    label: 'Event',
+    value: 'event',
+    resourceEndPoint: 'event',
+    //config is used in API config
+    configKey: 'events',
+  },
+  {
+    label: 'Organisation',
+    value: 'organisation',
+    resourceEndPoint: 'organisation',
+    //config is used in API config
+    configKey: 'organisations',
+  },
+];
 
 exports.schemaFormat = resources;
