@@ -206,6 +206,7 @@ module.exports = {
       /**
        * In case of activeUser we load in the active Openstad user
        */
+      console.log('req.data.activeResourceType', req.data.activeResourceType);
       const resourceInfo = resourcesSchema.find(
         (resourceInfo) => resourceInfo.value === req.data.activeResourceType
         );
