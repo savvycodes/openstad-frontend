@@ -206,10 +206,15 @@ module.exports = {
       /**
        * In case of activeUser we load in the active Openstad user
        */
-
       const resourceInfo = resourcesSchema.find(
         (resourceInfo) => resourceInfo.value === req.data.activeResourceType
-      );
+        );
+      
+      if (!resourceInfo || !resourceInfo.resourceEndPoint) {
+        req.notFound = true;
+        return callback(null);
+      }
+
       req.data.activeResourceEndpoint = resourceInfo.resourceEndPoint;
 
       self.fetchResourceData(req, callback);

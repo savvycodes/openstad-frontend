@@ -35,7 +35,7 @@ const resources = [
     resourceEndPoint: 'event',
     //config is used in API config
     configKey: 'events'
-  }
+  },
 ]
 
 exports.schemaFormat = resources;
