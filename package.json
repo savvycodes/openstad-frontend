@@ -19,9 +19,9 @@
   "homepage": "https://github.com/Amsterdam/openstad-frontend#readme",
   "dependencies": {
     "@openstad/cms": "file:packages/cms",
-    "@savvycodes/openstad-event-browser-widgets": "0.0.5-alpha.24",
-    "@savvycodes/openstad-event-planner-widgets": "0.0.5-alpha.24",
-    "@savvycodes/openstad-event-favorites-widgets": "0.0.5-alpha.26",
+    "@savvycodes/openstad-event-browser-widgets": "0.0.5-alpha.27",
+    "@savvycodes/openstad-event-planner-widgets": "0.0.5-alpha.27",
+    "@savvycodes/openstad-event-favorites-widgets": "0.0.5-alpha.27",
     "@savvycodes/openstad-event-global-settings": "0.0.5-alpha.24",
     "apostrophe": "2.220.7",
     "apostrophe-area-structure": "^1.1.1",
