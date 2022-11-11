@@ -1,5 +1,5 @@
 # Nodejs 8.0.0 alpine 3.6.0
-FROM node:13.14.0-alpine
+FROM node:16.16.0-alpine
 
 # Label for tracking
 LABEL nl.openstad.container="frontend" nl.openstad.version="0.0.1-beta" nl.openstad.release-date="2020-05-07"
@@ -27,7 +27,7 @@ ENV DEFAULT_HOST="" \
     S3_BUCKET=""
 
 # Install all base dependencies.
-RUN apk add --no-cache --update openssl g++ make python musl-dev git bash
+RUN apk add --no-cache --update openssl g++ make python3 musl-dev git bash
 
 # Set the working directory to the root of the container
 WORKDIR /home/app
@@ -48,9 +48,21 @@ RUN mkdir -p /home/app/public \
 COPY --chown=node:node . /home/app
 
 # Install node modules
-RUN npm install --loglevel warn --production \
-    # Remove unused packages only used for building.
-    && apk del openssl g++ make python && rm -rf /var/cache/apk/*
+RUN npm install --loglevel warn --production
+
+RUN npm install -g nodemon
+
+# Remove unused packages only used for building.
+RUN apk del openssl g++ make python3 && rm -rf /var/cache/apk/*
+
+RUN mkdir -p /home/app/public
+RUN mkdir -p /home/app/public
+RUN mkdir -p /home/app/public/modules
+RUN mkdir -p /home/app/public/css
+RUN mkdir -p /home/app/public/js
+RUN mkdir -p /home/app/public/img
+RUN mkdir -p /home/app/public/apos-minified
+RUN mkdir -p /home/app/data
 
 # Mount persistent storage
 #VOLUME /home/app/data
