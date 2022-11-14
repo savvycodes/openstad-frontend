@@ -63,6 +63,7 @@ module.exports = {
       self.pushAsset('script', 'vote', { when: 'always' });
       self.pushAsset('script', 'main', { when: 'always' });
       self.pushAsset('script', 'ideas-lister', { when: 'always' });
+      self.pushAsset('script', 'tag-filter', { when: 'always' });
     };
 
     const superLoad = self.load;
