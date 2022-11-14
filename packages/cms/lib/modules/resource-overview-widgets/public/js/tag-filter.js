@@ -2,7 +2,7 @@ var onMultiSelectToggle = function onMultiSelectToggle(filterHeaderElement) {
     var header = filterHeaderElement;
     var sibling = filterHeaderElement.nextElementSibling;
     
-    if(header && sibling.classList.contains(`multi-select-children-container`)) {
+    if(header && sibling.classList.contains("multi-select-children-container")) {
         sibling.classList.toggle("multiselect-open");
         header.classList.toggle('closed');
 
