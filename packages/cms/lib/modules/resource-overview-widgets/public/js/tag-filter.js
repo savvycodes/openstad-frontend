@@ -1,6 +1,6 @@
-var onMultiSelectToggle = function onMultiSelectToggle(e) {
-    var header = e;
-    var sibling = e.nextElementSibling;
+var onMultiSelectToggle = function onMultiSelectToggle(filterHeaderElement) {
+    var header = filterHeaderElement;
+    var sibling = filterHeaderElement.nextElementSibling;
     
     if(header && sibling.classList.contains(`multi-select-children-container`)) {
         sibling.classList.toggle("multiselect-open");
