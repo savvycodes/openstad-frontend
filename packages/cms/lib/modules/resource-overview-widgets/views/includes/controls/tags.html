@@ -5,7 +5,7 @@
   </a>
 </div>
 <div class="resource-overview-tags-container hidden-xs">
-  <div class="filter-header closed" onclick="onMultiSelectToggle(this)">
+  <div class="filter-header{{' closed' if not data.query.oTags }}" onclick="onMultiSelectToggle(this)">
     <h3>Filter op tags</h3>
     <img src="{{data.siteUrl}}/modules/openstad-assets/img/arrow_down_black.svg"/>
   </div>
@@ -13,10 +13,10 @@
     {% for tag in data.widget.openstadTags %}
     {% if data.widget.isTagSelected(tag, data.query) %}
     <a href="{{data.widget.formatTagRemoveUrl(tag, data.query)}}" 
-    style="display: none;"class="resource-tag resource-tag--selected openstad-ajax-refresh-link" data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
+    class="resource-tag resource-tag--selected openstad-ajax-refresh-link" data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
     {% else %}
     <a href="{{data.widget.formatTagSelectUrl(tag, data.query)}}" class="resource-tag openstad-ajax-refresh-link" data-reset-pagination="1" 
-    style="display: none;"data-reset-hash="1">{{tag.name}}</a>
+    data-reset-hash="1">{{tag.name}}</a>
     {% endif %}
     {% endfor %}
   </div>

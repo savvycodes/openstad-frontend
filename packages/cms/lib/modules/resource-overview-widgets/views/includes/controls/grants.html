@@ -8,18 +8,20 @@
 
 
 <div class="resource-overview-tags-container hidden-xs">
- 
-  <div class="filter-header closed" onclick="onMultiSelectToggle(this)">
+  <div class="filter-header{{' closed' if not data.query.oGrants }}" onclick="onMultiSelectToggle(this)">
     <h3>Filter op subsidie</h3>
     <img src="{{data.siteUrl}}/modules/openstad-assets/img/arrow_down_black.svg"/>
   </div>
   <div class="multi-select-children-container">
     {% for tag in data.widget.openstadGrants %}
     {% if data.widget.isGrantSelected(tag, data.query) %}
-    <a href="{{data.widget.formatGrantRemoveUrl(tag, data.query)}}" 
-    style="display: none;" class="resource-tag resource-tag--selected openstad-ajax-refresh-link" data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
+   <a href="{{data.widget.formatGrantRemoveUrl(tag, data.query)}}"
+      class="resource-tag resource-tag--selected openstad-ajax-refresh-link" data-reset-pagination="1"
+      data-reset-hash="1">{{tag.name}}</a>
     {% else %}
-    <a  style="display: none;" href="{{data.widget.formatGrantSelectUrl(tag, data.query)}}" class="resource-tag openstad-ajax-refresh-link" data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
+    <a href="{{data.widget.formatGrantSelectUrl(tag, data.query)}}"
+      class="resource-tag openstad-ajax-refresh-link"
+      data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
     {% endif %}
     {% endfor %}
   </div>
