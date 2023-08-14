@@ -4,15 +4,25 @@
     Filter op doelgroep
   </a>
 </div>
+
 <div class="resource-overview-tags-container hidden-xs">
-  <h3>Filter op doelgroep</h3>
-  {% for tag in data.widget.openstadTargetAudiences %}
-  {% if data.widget.isTargetAudienceSelected(tag, data.query) %}
-  <a href="{{data.widget.formatTargetAudienceRemoveUrl(tag, data.query)}}" class="resource-tag resource-tag--selected openstad-ajax-refresh-link" data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
-  {% else %}
-  <a href="{{data.widget.formatTargetAudienceSelectUrl(tag, data.query)}}" class="resource-tag openstad-ajax-refresh-link" data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
-  {% endif %}
-  {% endfor %}
+  <div class="filter-header{{' closed' if not data.query.oTargetAudiences }}" onclick="onMultiSelectToggle(this)">
+    <h3>Filter op doelgroep</h3>
+    <img src="{{data.siteUrl}}/modules/openstad-assets/img/arrow_down_black.svg"/>
+  </div>
+  <div class="multi-select-children-container">
+    {% for tag in data.widget.openstadTargetAudiences %}
+    {% if data.widget.isTargetAudienceSelected(tag, data.query) %}
+    <a href="{{data.widget.formatTargetAudienceRemoveUrl(tag, data.query)}}"
+      class="resource-tag resource-tag--selected openstad-ajax-refresh-link" data-reset-pagination="1"
+      data-reset-hash="1">{{tag.name}}</a>
+    {% else %}
+    <a href="{{data.widget.formatTargetAudienceSelectUrl(tag, data.query)}}"
+      class="resource-tag openstad-ajax-refresh-link"
+      data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
+    {% endif %}
+    {% endfor %}
+  </div>
 </div>
 <div id="filter-target-audiences-modal" class="content-modal content-modal--l">
   <div class="content-modal-content">
@@ -23,9 +33,13 @@
       </a>
       {% for tag in data.widget.openstadTargetAudiences %}
       {% if data.widget.isTargetAudienceSelected(tag, data.query) %}
-      <a href="{{data.widget.formatTargetAudienceRemoveUrl(tag, data.query)}}" class="resource-tag resource-tag--selected openstad-ajax-refresh-link resource-tag--{{tag.id}}" data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
+      <a href="{{data.widget.formatTargetAudienceRemoveUrl(tag, data.query)}}"
+        class="resource-tag resource-tag--selected openstad-ajax-refresh-link resource-tag--{{tag.id}}"
+        data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
       {% else %}
-      <a href="{{data.widget.formatTargetAudienceSelectUrl(tag, data.query)}}" class="resource-tag openstad-ajax-refresh-link resource-tag--{{tag.id}}" data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
+      <a href="{{data.widget.formatTargetAudienceSelectUrl(tag, data.query)}}"
+        class="resource-tag openstad-ajax-refresh-link resource-tag--{{tag.id}}" data-reset-pagination="1"
+        data-reset-hash="1">{{tag.name}}</a>
       {% endif %}
       {% endfor %}
       <br />

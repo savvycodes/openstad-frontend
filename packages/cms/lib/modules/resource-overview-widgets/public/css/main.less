@@ -223,3 +223,38 @@ input.search {
 .tile.card-grey {
   //box-shadow: 0 12px 24px 0 rgba(42, 18, 18, 0.09);
 }
+
+.filter-header {
+  cursor: pointer;
+  display: flex;
+}
+
+.filter-header > h3 {
+  flex-grow: 1;
+  margin: 0;
+  line-height: 24px;
+  font-size: 18px;
+}
+
+.filter-header > img {
+  transform: rotate(180deg);
+}
+
+.filter-header.closed > img {
+  transform: rotate(360deg);
+}
+
+.filter-header + .multi-select-children-container > a {
+  display: block;
+}
+
+.filter-header.closed + .multi-select-children-container > a{
+  display: none;
+}
+
+// Mozilla has a weird bug that enlarges the width of img because of a .row img class that works correctly in chrome and safari
+@-moz-document url-prefix() {
+  .filter-header > img {
+    max-width: 13.8px !important;
+  }
+}

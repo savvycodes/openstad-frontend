@@ -4,15 +4,27 @@
     Filter op subsidie
   </a>
 </div>
+
+
+
 <div class="resource-overview-tags-container hidden-xs">
-  <h3>Filter op subsidie</h3>
-  {% for tag in data.widget.openstadGrants %}
-  {% if data.widget.isGrantSelected(tag, data.query) %}
-  <a href="{{data.widget.formatGrantRemoveUrl(tag, data.query)}}" class="resource-tag resource-tag--selected openstad-ajax-refresh-link" data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
-  {% else %}
-  <a href="{{data.widget.formatGrantSelectUrl(tag, data.query)}}" class="resource-tag openstad-ajax-refresh-link" data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
-  {% endif %}
-  {% endfor %}
+  <div class="filter-header{{' closed' if not data.query.oGrants }}" onclick="onMultiSelectToggle(this)">
+    <h3>Filter op subsidie</h3>
+    <img src="{{data.siteUrl}}/modules/openstad-assets/img/arrow_down_black.svg"/>
+  </div>
+  <div class="multi-select-children-container">
+    {% for tag in data.widget.openstadGrants %}
+    {% if data.widget.isGrantSelected(tag, data.query) %}
+   <a href="{{data.widget.formatGrantRemoveUrl(tag, data.query)}}"
+      class="resource-tag resource-tag--selected openstad-ajax-refresh-link" data-reset-pagination="1"
+      data-reset-hash="1">{{tag.name}}</a>
+    {% else %}
+    <a href="{{data.widget.formatGrantSelectUrl(tag, data.query)}}"
+      class="resource-tag openstad-ajax-refresh-link"
+      data-reset-pagination="1" data-reset-hash="1">{{tag.name}}</a>
+    {% endif %}
+    {% endfor %}
+  </div>
 </div>
 <div id="filter-target-audiences-modal" class="content-modal content-modal--l">
   <div class="content-modal-content">

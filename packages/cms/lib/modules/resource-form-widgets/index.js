@@ -52,7 +52,9 @@ module.exports = {
         label: 'Algemeen',
         fields: [
           'resource',
+          'formName',
           'redirect',
+          'hideAdminAfterPublicAction',
           'loginText',
           'formType',
           'dynamicFormSections',
@@ -188,13 +190,29 @@ module.exports = {
         label: 'Budget',
         fields: ['displayBudget'],
       },
+      {
+        name: 'confirmation',
+        label: 'Confirmation',
+        fields: [
+          'confirmationEnabledUser', 'confirmationTemplateNameUser', 'confirmationSubjectUser', 'confirmationEmailFieldUser', 'confirmationEmailFieldUser', 'confirmationEmailContentUser',
+          'confirmationEnabledAdmin', 'confirmationTemplateNameAdmin', 'confirmationSubjectAdmin', 'confirmationEmailFieldAdmin', 'confirmationEmailFieldAdmin', 'confirmationEmailContentAdmin'
+        ]
+      }
     ]);
 
     self.apos.app.use((req, res, next) => {
       loadGrants(req, res, next);
     });
 
+     require('./lib/helpers.js')(self, options);
+    require('./lib/api.js')(self, options);
     require('./lib/submit.js')(self, options);
+
+    self.on('apostrophe-docs:afterSave', 'syncConfirmationFields');
+    self.on('apostrophe-docs:afterTrash', 'deleteConfirmationFields');
+    self.on('apostrophe-workflow:afterCommit', 'logCommitData', function (req, data) {
+      self.apos.utils.info('The commit data is', data);
+    });
 
     /** add config **/
     const superLoad = self.load;
@@ -203,78 +221,55 @@ module.exports = {
       const styles = openstadMap.defaults.styles;
       const globalData = req.data.global;
 
-      //req.data.userFormFields = userFormFields;
-
-      widgets.forEach((widget) => {
+      widgets.forEach(async (widget) => {
         const resourceType = widget.resource ? widget.resource : false;
-        const resourceInfo = resourceType
-          ? resourcesSchema.find(
-              (resourceInfo) => resourceInfo.value === resourceType
-            )
-          : false;
-
+        const resourceInfo = resourceType ? resourcesSchema.find((resourceInfo) => resourceInfo.value === resourceType) : false;
         if (!resourceInfo) {
           return;
         }
 
-        const resourceConfigKey = resourceInfo ? resourceInfo.configKey : false;
-        const resourceConfig =
-          req.data.global.siteConfig &&
-          req.data.global.siteConfig[resourceConfigKey]
-            ? req.data.global.siteConfig[resourceConfigKey]
-            : {};
-
         const siteConfig = req.data.global.siteConfig;
+        const resourceConfigKey = resourceInfo ? resourceInfo.configKey : false;
+        const resourceConfig = siteConfig && siteConfig[resourceConfigKey] ? siteConfig[resourceConfigKey] : {};
 
         widget.resourceConfig = {
-          titleMinLength: resourceConfig.titleMinLength || 10,
-          titleMaxLength: resourceConfig.titleMaxLength || 50,
-          summaryMinLength: resourceConfig.summaryMinLength || 20,
-          summaryMaxLength: resourceConfig.summaryMaxLength || 140,
-          descriptionMinLength: resourceConfig.descriptionMinLength || 140,
-          descriptionMaxLength: resourceConfig.descriptionMaxLength || 5000,
-        };
+          titleMinLength: (resourceConfig.titleMinLength) || 10,
+          titleMaxLength: (resourceConfig.titleMaxLength) || 50,
+          summaryMinLength: (resourceConfig.summaryMinLength) || 20,
+          summaryMaxLength: (resourceConfig.summaryMaxLength) || 140,
+          descriptionMinLength: (resourceConfig.descriptionMinLength) || 140,
+          descriptionMaxLength: (resourceConfig.descriptionMaxLength) || 5000,
+        }
 
         widget.resourceEndPoint = resourceInfo.resourceEndPoint;
 
         widget.siteConfig = {
           openstadMap: {
-            polygon:
-              (siteConfig &&
-                siteConfig.openstadMap &&
-                siteConfig.openstadMap.polygon) ||
-              undefined,
+            polygon: (siteConfig && siteConfig.openstadMap && siteConfig.openstadMap.polygon) || undefined,
           },
-        };
+        }
 
         // Add function for rendering raw string with nunjucks templating engine
         // Yes this ia a powerful but dangerous plugin :), admin only
         widget.renderString = (rawInput, data) => {
           try {
-            return self.apos.templates.renderStringForModule(
-              req,
-              rawInput,
-              data,
-              self
-            );
+            return self.apos.templates.renderStringForModule(req, rawInput, data, self);
           } catch (e) {
-            return 'Error....';
+            console.error(e);
+            return 'Error....'
           }
-        };
+        }
 
-        const markerStyle =
-          siteConfig.openStadMap && siteConfig.openStadMap.markerStyle
-            ? siteConfig.openStadMap.markerStyle
-            : null;
+        const markerStyle = siteConfig.openStadMap && siteConfig.openStadMap.markerStyle ? siteConfig.openStadMap.markerStyle : null;
 
         // Todo: refactor this to get resourceId in a different way
         const activeResource = req.data.activeResource;
         const resources = activeResource ? [activeResource] : [];
-        const googleMapsApiKey = self.apos.settings.getOption(
-          req,
-          'googleMapsApiKey'
-        );
+        const googleMapsApiKey = self.apos.settings.getOption(req, 'googleMapsApiKey');
 
+        const isOwner = activeResource ? req.data.openstadUser && req.data.openstadUser.id === activeResource.userId : false;
+        const isReactedTo = activeResource ? (activeResource.yes > 0 || activeResource.no > 0 || activeResource.argumentCount > 0) : false;
+        const isOwnerOrAdmin = ((!isReactedTo || !widget.hideAdminAfterPublicAction) && isOwner) || req.data.hasModeratorRights;
         widget.isChecked = function (resourceName, resourceId) {
           if (!resourceName || !resourceId) {
             return false;
@@ -283,28 +278,17 @@ module.exports = {
           return items.some((res) => res.id === resourceId);
         };
 
-        widget.mapConfig = self
-          .getMapConfigBuilder(globalData)
+        widget.mapConfig = self.getMapConfigBuilder(globalData)
           .setDefaultSettings({
-            mapCenterLat:
-              (activeResource &&
-                activeResource.location &&
-                activeResource.location.coordinates &&
-                activeResource.location.coordinates[0]) ||
-              globalData.mapCenterLat,
-            mapCenterLng:
-              (activeResource &&
-                activeResource.location &&
-                activeResource.location.coordinates &&
-                activeResource.location.coordinates[1]) ||
-              globalData.mapCenterLng,
+            mapCenterLat: (activeResource && activeResource.location && activeResource.location.coordinates && activeResource.location.coordinates[0]) || globalData.mapCenterLat,
+            mapCenterLng: (activeResource && activeResource.location && activeResource.location.coordinates && activeResource.location.coordinates[1]) || globalData.mapCenterLng,
             mapZoomLevel: 13,
             zoomControl: true,
             disableDefaultUI: true,
             styles: styles,
             googleMapsApiKey: googleMapsApiKey,
             useMarkerLinks: false,
-            markers: [],
+            markers: []
             //  polygon: req.data.global.mapPolygons || null
           })
           .setMarkerStyle(markerStyle)
@@ -313,6 +297,23 @@ module.exports = {
           .setEditorMarkerElement('locationField')
           .setPolygon(req.data.global.mapPolygons || null)
           .getConfig();
+
+        widget.showForm = self.showForm(widget, activeResource, isOwnerOrAdmin, req.data.openstadUser)
+
+        // Load confirmation values from api
+        if (isOwnerOrAdmin && req.method === 'GET') {
+          for (const type of ['User', 'Admin']) {
+            if (widget[`confirmationEnabled${type}`]) {
+              const formName = `${type}-${widget.formName}`;
+              const {template, recipient} = await self.getNotificationByFormName(formName);
+
+              widget[`confirmationTemplateName${type}`] = template.templateFile || '';
+              widget[`confirmationSubject${type}`] = template.subject || '';
+              widget[`confirmationEmailField${type}`] = self.removeColumnNameFromEmailFieldValue(recipient.value)
+              widget[`confirmationEmailContent${type}`] = template.text || '';
+            }
+          }
+        }
       });
 
       superLoad(req, widgets, next);
@@ -338,5 +339,14 @@ module.exports = {
       //self.pushAsset('script', 'filepond', { when: 'always' });
       // self.pushAsset('script', 'trix', { when: 'always' });
     };
-  },
+
+    self.route('post', 'modal', function (req, res) {
+      // Make sure the chooser will be allowed to edit this schema
+      const schema = self.allowedSchema(req);
+      self.apos.schemas.bless(req, schema);
+      console.log(req.body);
+      return res.send(self.render(req, 'widgetEditor.html', {label: self.label, schema: schema}));
+    });
+
+  }
 };

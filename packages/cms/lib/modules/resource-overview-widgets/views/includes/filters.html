@@ -31,7 +31,7 @@
     {% include 'includes/controls/sort.html' %}
     {% endif %}
 
-    {% if data.query.oTags or data.query.theme or data.query.area or data.query.search or data.query.oTargetAudiences  %}
+    {% if data.query.oTags or data.query.theme or data.query.area or data.query.search or data.query.oTargetAudiences or data.query.oGrants  %}
     <a href="{{data.currentPathname}}" class="resource-filter-erase openstad-ajax-refresh-link">
       <img src="{{data.siteUrl}}/modules/openstad-assets/img/eye.svg" width="23" height="16" />
       Laat alles zien

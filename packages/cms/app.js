@@ -26,7 +26,8 @@ const morgan = require('morgan');
 
 //internal code
 const cdns = require('./services/cdns');
-const dbExists = require('./services/mongo').dbExists;
+const mongo = require('./services/mongo');
+
 const openstadMap = require('./config/map').default;
 const openstadMapPolygons = require('./config/map').polygons;
 const defaultSiteConfig = require('./config/siteConfig');
@@ -48,6 +49,7 @@ const fileExtension =
 
 // Storing all site data in the site config
 let sites = {};
+let sitesById = {};
 let sitesResponse = [];
 const aposStartingUp = {};
 const REFRESH_SITES_INTERVAL = 60000 * 5;
@@ -85,26 +87,26 @@ function fetchAllSites(req, res, startSites) {
     json: true, // Automatically parses the JSON string in the response
   };
 
-  return rp(siteOptions)
-    .then((response) => {
-      sitesResponse = response;
-      const newSites = [];
+    return rp(siteOptions)
+        .then((response) => {
+            sitesResponse = response;
+            const newSites = [];
+            const newSitesById = [];
 
-      response.forEach((site, i) => {
-        // for convenience and speed we set the domain name as the key
-        newSites[site.domain] = site;
-      });
+            response.forEach((site, i) => {
+                // for convenience and speed we set the domain name as the key
+                newSites[site.domain] = site;
+              newSitesById[site.id] = site
+            });
 
-      sites = newSites;
-      cleanUpSites();
-    })
-    .catch((e) => {
-      console.error('An error occurred fetching the site config:', e);
-      if (res)
-        res
-          .status(500)
-          .json({ error: 'An error occured fetching the sites data: ' + e });
-    });
+            sites = newSites;
+            sitesById = newSitesById;
+            cleanUpSites();
+
+        }).catch((e) => {
+            console.error('An error occurred fetching the site config:', e);
+            if (res) res.status(500).json({error: 'An error occured fetching the sites data: ' + e});
+        });
 }
 
 // run through all sites see if anyone is not active anymore and needs to be shut down
@@ -129,13 +131,31 @@ function serveSite(req, res, siteConfig, forceRestart) {
       : '';
   const domain = siteConfig.domain;
 
-  // check if the mongodb database exist. The name for databse
-  return dbExists(dbName)
-    .then((exists) => {
-      // if default DB is set
-      if (exists || dbName === process.env.DEFAULT_DB) {
-        if ((!aposServer[domain] || forceRestart) && !aposStartingUp[domain]) {
-          console.log('(Re)Start apos domain, siteId', domain, siteConfig.id);
+    // check if this site needs to redirect. We can then skip the rest.
+    let redirectURI = siteConfig.config && siteConfig.config.cms && siteConfig.config.cms.redirectURI;
+    if (redirectURI) {
+      return res.redirect(redirectURI);
+    }
+  
+    // check if the mongodb database exist. The name for databse
+    return new Promise((resolve, reject) => {
+
+        if (aposServer[domain]) {
+            return resolve(true);
+        }
+
+        mongo.dbExists(dbName)
+          .then((isExisting) => {
+              resolve(isExisting);
+          }).catch((err) => {
+            reject(err);
+          })
+    }).then((exists) => {
+        // if default DB is set
+        if (exists || dbName === process.env.DEFAULT_DB) {
+
+            if ((!aposServer[domain] || forceRestart) && !aposStartingUp[domain]) {
+                console.log('(Re)Start apos domain, siteId', domain, siteConfig.id);
 
           //format sitedata so  config values are in the root of the object
           var config = siteConfig.config;
@@ -205,14 +225,22 @@ async function run(id, siteData, options, callback) {
 
   const siteConfig = defaultSiteConfig.get(site._id, config, assetsIdentifier);
 
-  siteConfig.afterListen = function () {
-    apos._id = site._id;
-    if (callback) {
-      return callback(null, apos);
+    siteConfig.afterListen = function () {
+        apos._id = site._id;
+        if (callback) {
+            return callback(null, apos);
+        }
+    };
+    
+    let aposConfig;
+    
+    if (siteData?.cms?.dbName) {
+        aposConfig = _.merge(siteConfig, siteData, {'modules': {'apostrophe-db': {uri: mongo.getConnectionString(siteData.cms.dbName)}}});
+    } else {
+        aposConfig = _.merge(siteConfig, siteData);
     }
-  };
-
-  const apos = apostrophe(_.merge(siteConfig, siteData));
+    
+    const apos = apostrophe(aposConfig);
 }
 
 module.exports.getDefaultConfig = (options) => {
@@ -312,14 +340,15 @@ module.exports.getMultiSiteApp = (options) => {
      */
     const site = sites[req.openstadDomain] ? sites[req.openstadDomain] : false;
 
-    // if site exists serve it, otherwise give a 404
-    if (site) {
-      req.site = site;
-      serveSite(req, res, site, req.forceRestart);
-    } else {
-      res.status(404).json({ error: 'Site not found' });
-    }
-  });
+        // if site exists serve it, otherwise give a 404
+        if (site) {
+            req.site = site;
+            req.allSites = sitesById;
+            serveSite(req, res, site, req.forceRestart);
+        } else {
+            res.status(404).json({error: 'Site not found'});
+        }
+    });
 
   /**
    * Update the site config every few minutes
